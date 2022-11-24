@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>自习室 system</title>
+
+  <link href="css/main.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="js/main.js"></script>
+  <!-- <script src="js/bootstrap.bundle.min.js" crossorigin="anonymous"></script> -->
+</head>
+
+<body>
+  <!-- 上部导航-->
+
+  <ul class="top-navbar">
+    <li class="top-navbar-item">AB自习室</li>
+    <li class="top-navbar-item"><a href="#news">关于</a></li>
+    <li class="top-navbar-item"><a href="#contact">登录</a></li>
+    <li class="top-navbar-item"><a href="#about">退出</a></li>
+  </ul>
+
+  <div class="main-part">
+    <div class="left-bar">
+      <h2>选择场馆</h2>
+      <div class="place-select">
+        <form class="place-select" id="select-place" action="select-place" method="GET" onchange="submit()">
+
+          <select multiple="multiple" class="select-item" name="position" style="height: 151px;">
+            <option value="东城" class="btn place-item">东城</option>
+            <option value="市中心" class="btn place-item">市中心</option>
+            <option value="解放路" class="btn place-item">解放路</option>
+          </select>
+        </form>
+      </div>
+
+      <div>
+        <h2>工具</h2>
+      </div>
+      <div class="addition-tools">
+        <div class="place-item tool-set"><a href="/">意见箱</a></div>
+        <div class="place-item tool-set"><a href="/">设置</a></div>
+
+      </div>
+
+
+    </div>
+
+    <div class="right-pannel">
+      <div class="select-bar">
+        <h2>筛选(座位分区等信息)</h2>
+      </div>
+      <div class="result-show">
+        <form action="yuyue" onclick="submit()">
+          <table id="result">
+            <tr>
+              <th>编号</th>
+              <th>姓名</th>
+              <th>年龄</th>
+            </tr>
+            <!-- <select name="readerno"> -->
+            <option name="readerno" value="a">
+              <tr>
+                <td>s</td>
+                <td>s</td>
+                <td>s</td>
+              </tr>
+            </option>
+            <!-- </select> -->
+          </table>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+
+
+
+  <!-- 引入JS -->
+  <!-- <script src="js/renderer.js" crossorigin></script> -->
+</body>
+
+</html>
