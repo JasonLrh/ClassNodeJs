@@ -16,13 +16,14 @@ var mysql_connection = mysql.createConnection({
     host     : 'localhost',
     user     : 'root',
     password : '123456',
-    database : 'db_book'
+    database : 'self_studyroom'
 });
 
 mysql_connection.connect();
 
 var page_info = {
     places:null,
+    rooms:null,
     user:{
         name:null,
         phone:null
@@ -30,13 +31,41 @@ var page_info = {
     filter:{
         place:null,
         seat_type:null
-    }
-
+    },
+    result:null
 };
 
-mysql_connection.query('SELECT * from bookclass;', function (error, results, fields) {
+mysql_connection.query('SELECT * from roomsite;', function (error, results, fields) {
     if (error) throw error;
     page_info.places = results;
+});
+
+function site_no_to_name(no) {
+    for (var i = 0 ; i < page_info.places.length; i++) {
+        if (no == page_info.places[i].siteno) {
+            return page_info.places[i].sitename;
+        }
+    }
+    return "奇妙的地点";
+}
+
+mysql_connection.query('SELECT * from roomclass;', function (error, results, fields) {
+    if (error) throw error;
+    page_info.rooms = results;
+});
+
+function room_no_to_name(no) {
+    for (var i = 0 ; i < page_info.rooms.length; i++) {
+        if (no == page_info.rooms[i].classno) {
+            return page_info.rooms[i].classname;
+        }
+    }
+    return "奇妙的区域";
+}
+
+mysql_connection.query('SELECT * from room;', function (error, results, fields) {
+    if (error) throw error;
+    page_info.result = results;
 });
 
 // * end : mysql *************************************************************
@@ -65,58 +94,39 @@ function mainpage_action() {
 
     var place_ch = "<select multiple=\"multiple\" class=\"select-item\" name=\"position\" style=\"height: " + (page_info.places.length * 50 + 3) + ";\">";
     for (var i = 0; i < page_info.places.length; i++){
-        place_ch += "<option value=\"" + page_info.places[i].classno + "\" class=\"btn place-item\">" + page_info.places[i].classname + "</option>";
+        place_ch += "<option value=\"" + page_info.places[i].siteno + "\" class=\"btn place-item\">" + page_info.places[i].sitename + "</option>";
     }
     document.getElementById('select-place').innerHTML = place_ch + "</select>";
 
-    var k_find_res;
-    var __mysql_cmd = 'SELECT * from book ';
-
-    // if (page_info.filter.place != null) {
-    //     __mysql_cmd += 'where classno='
-    // }
-
-    if (page_info.filter.place === null && page_info.filter.seat_type === null) {
-        // mysql_connection.query('SELECT * from book;', function (error, results, fields) {
-        //     if (error) throw error;
-        //     page_info.places = results;
-        // });
-        __mysql_cmd = 'SELECT * from book;';
-    } 
-
-    mysql_connection.query(__mysql_cmd, function (error, results, fields) {
-        if (error) throw error;
-        k_find_res = results;
-        console.log(k_find_res);
-        
-    });
-
-    
-
-    var form_ch = "<tr><th>编号</th><th>姓名</th><th>性别</th><th>身份证号</th><th>单位</th></tr>";
+    var form_ch = "<table><tr><th>编号</th><th>区号</th><th>价钱</th><th>评级</th><th>地点</th><th>预约</th></tr>\n";
     function add_element(ele) {
         return "<td>" + ele + "</td>"
     }
 
-    for (var i = 0; i < k_find_res.length; i++){
-        form_ch += "<tr onclick=\"yuyue('"+k_find_res[i].bookno+"')\">";
-        form_ch += add_element(k_find_res[i].bookno);
-        form_ch += add_element(k_find_res[i].classno);
-        form_ch += add_element(k_find_res[i].bookname);
-        form_ch += add_element(k_find_res[i].authorname);
-        form_ch += add_element(k_find_res[i].publisherno);
-        form_ch += "</tr>";
+    if (page_info.result != null) {
+        for (var i = 0; i < page_info.result.length; i++){
+            form_ch += "<tr>";
+            form_ch += add_element(page_info.result[i].roomno);
+            form_ch += add_element(room_no_to_name(page_info.result[i].classno));
+            form_ch += add_element(page_info.result[i].price);
+            form_ch += add_element(page_info.result[i].evaluate);
+            // form_ch += add_element(page_info.result[i].state);
+            const isDisable = page_info.result[i].state == '空闲' ? '':'disabled';
+            form_ch += add_element(site_no_to_name(page_info.result[i].siteno));
+            form_ch += add_element("<input type=\"checkbox\" name=\"seat\" value=\"" + page_info.result[i].roomno + "\" " + isDisable + ">");
+            form_ch += "</tr>\n";
+        }
     }
-    document.getElementById('result').innerHTML = form_ch;
+    document.getElementById('result').innerHTML = form_ch + '</table>';
 
-    return(document.querySelector("html").outerHTML)
+    return(document.querySelector("html").outerHTML);
 }
 
 app.get('/login', (req, res) => {
     const info = req.query;
     //! 判断用户类型，检验合理性
     console.log('用户登录GET:', info);
-    if (info.uid.length != 11 || Number(info.uid) + "" != info.uid) {
+    if (info.uid.length != 10 || Number(info.uid) + "" != info.uid) {
         res.type('text');
         res.end("手机号格式错误，请返回重试:" + info.uid.length + " " + Number(info.uid));
         return;
@@ -124,7 +134,7 @@ app.get('/login', (req, res) => {
     if (info.typ == '注册') {
         // 在数据库中检查用户id是否被注册过
         // ! 修改子句
-        mysql_connection.query('select readerno, readername from reader where readerno=\'' + 'R2015001' + '\'', function (error, results, fields) {
+        mysql_connection.query('select phone, password from information where phone=\'' + info.uid + '\'', function (error, results, fields) {
             if (error) throw error;
             console.log('数据库检索:', results);
             if (results.length != 0) {
@@ -132,18 +142,20 @@ app.get('/login', (req, res) => {
                 res.end("该用户已存在，请返回登录");
                 return;
             } else {
-                page_info.user.name = results[0].readername;
+                page_info.user.name = "新注册用户"; 
                 page_info.user.phone = info.uid;
                 // ! 向数据库中插入用户
-                // mysql : insert xxxxxx
-                res.end(mainpage_action());
+                mysql_connection.query('INSERT INTO `information` VALUES (\'' + info.uid + '\',\'' + info.psd + '\');', function (error, results, fields) {
+                    if (error) throw error;
+                    res.end(mainpage_action());
+                });
                 return;
             }
         });
     } else {
         // 在数据库中检索用户密码是否匹配
         // ! 修改子句
-        mysql_connection.query('select readerno, readername from reader where readerno=\'' + 'R2015001' + '\'', function (error, results, fields) {
+        mysql_connection.query('select phone, password from information where phone=\'' + info.uid + '\'', function (error, results, fields) {
             if (error) throw error;
             console.log('数据库检索:', results);
             if (results.length != 1) {
@@ -151,9 +163,22 @@ app.get('/login', (req, res) => {
                 res.end(results.length == 0 ? "没有此用户啊，请返回重试" : "数据库设计有bug! 请联系管理员");
                 return;
             } else {
-                page_info.user.name = results[0].readername;
-                page_info.user.phone = info.uid;
-                res.end(mainpage_action());
+                if (results[0].password != info.psd) {
+                    // ! 密码不匹配，请重试
+                    res.type('text');
+                    res.end("密码不匹配，请返回重试");
+                    return;
+                }
+                mysql_connection.query('SELECT username from user where phone=\'' + info.uid + '\';', function (error, results, fields) {
+                    if (error) throw error;
+                    if (results.length == 1) {
+                        page_info.user.name = results[0].username; // !
+                    } else {
+                        page_info.user.name = "无名用户"; // !
+                    }
+                    page_info.user.phone = info.uid;
+                    res.end(mainpage_action());
+                });
                 return;
             }
         });
@@ -167,17 +192,21 @@ app.get('/select-place', function(req, res) {
     if (ans instanceof Array) {
         for (var i = 0; i < ans.length; i++){
             // console.log(ans[i])
-            tem += (ans[i])
+            tem += ('siteno=\'' + ans[i] + '\'')
             if (i != ans.length - 1) {
-                tem +=  ",";
+                tem +=  " OR ";
             } else {
-                tem += ""
+                tem += "";
             }
         }
     } else {
-        tem
+        tem = 'siteno=\'' + ans + '\'';
     }
-    res.end(mainpage_action());
+    mysql_connection.query('SELECT * from room where ' + tem + ';', function (error, results, fields) {
+        if (error) throw error;
+        page_info.result = results;
+        res.end(mainpage_action());
+    });
 });
 
 // app.get('/yuyue', function(req, res) {

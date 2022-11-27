@@ -15,7 +15,7 @@
     <li class="top-navbar-item">AB自习室</li>
     <li class="top-navbar-item"><a id="username">用户</a></li>
     <li class="top-navbar-item"><a id="userphone">手机号</a></li>
-    <li class="top-navbar-item"><a>退出</a></li>
+    <li class="top-navbar-item"><a href="/">退出</a></li>
   </ul>
 
   <div class="main-part">
@@ -40,20 +40,18 @@
 
     <div class="right-pannel">
       <div class="result-show">
-        <form action="yuyue" onclick="submit()">
-          <table id="result">
+        <form id="result" action="yuyue" onchange="submit()">
+          <table>
             <tr>
               <th>编号</th>
               <th>姓名</th>
               <th>年龄</th>
             </tr>
-            <option name="readerno" value="a">
-              <tr>
-                <td>s</td>
-                <td>s</td>
-                <td>s</td>
-              </tr>
-            </option>
+            <tr>
+              <td>s</td>
+              <td>s</td>
+              <td><input type="checkbox" name="das" value="asdhuasoug" disabled="true"> </td>
+            </tr>
           </table>
         </form>
       </div>
