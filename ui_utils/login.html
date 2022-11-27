@@ -25,7 +25,7 @@
         /* margin-top: 10px; */
         float: top;">请先登录</h2>
         <br/>
-        <form action="login" name="login" method="get">
+        <form action="login" name="login" method="get" onsubmit="return check_form_valid()">
           <table>
             <tr>
               <td>手机号</td>
@@ -41,28 +41,21 @@
           <input type="submit" name="typ" value="注册">
         </form>
       </div>
-      <!-- <div class="result-show">
-        <form action="yuyue" onclick="submit()">
-          <table id="result">
-            <tr>
-              <th>编号</th>
-              <th>姓名</th>
-              <th>年龄</th>
-            </tr>
-            <option name="readerno" value="a">
-              <tr>
-                <td>s</td>
-                <td>s</td>
-                <td>s</td>
-              </tr>
-            </option>
-          </table>
-        </form>
-      </div> -->
-
-
     </div>
   </div>
 </body>
+
+<script type="text/javascript">
+  function check_form_is_valid() {
+
+    var uid = document.querySelector("input[name='uid']").value;
+    var psd = document.querySelector("input[name='psd']").value;
+
+    if (uid.length != 11 || Number(info.uid) + "" != uid) {
+      alert('手机号格式错误，重试！');
+      return false;
+    }
+  }
+</script>
 
 </html>

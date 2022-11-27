@@ -1,43 +1,43 @@
 const express = require('express');
-var app       = express();
-var router    = express.Router();
+var app = express();
+var router = express.Router();
 
-const util    = require('util');
-const fs      = require('fs');
-const jsdom   = require('jsdom');
-const {JSDOM} = jsdom;
+const util = require('util');
+const fs = require('fs');
+const jsdom = require('jsdom');
+const { JSDOM } = jsdom;
 
 
 // * start: mysql *************************************************************
-const mysql   = require('mysql');
+const mysql = require('mysql');
 const { isCryptoKey } = require('util/types');
 const { table } = require('console');
 const { userInfo } = require('os');
 
 var mysql_connection = mysql.createConnection({
-    host     : 'localhost',
-    user     : 'root',
-    password : '123456',
-    database : 'self_studyroom'
+    host: 'localhost',
+    user: 'root',
+    password: '123456',
+    database: 'self_studyroom'
 });
 
 mysql_connection.connect();
 
 var page_info = {
-    places:null,
-    rooms:null,
-    user:{
-        name:null,
-        userno:null,
-        sex:null,
-        phone:null,
-        idid:null
+    places: null,
+    rooms: null,
+    user: {
+        name: null,
+        sex: null,
+        phone: null,
+        idid: null,
+        has_info: false
     },
-    filter:{
-        place:null,
-        seat_type:null
+    filter: {
+        place: null,
+        seat_type: null
     },
-    result:null
+    result: null
 };
 
 mysql_connection.query('SELECT * from roomsite;', function (error, results, fields) {
@@ -46,7 +46,7 @@ mysql_connection.query('SELECT * from roomsite;', function (error, results, fiel
 });
 
 function site_no_to_name(no) {
-    for (var i = 0 ; i < page_info.places.length; i++) {
+    for (var i = 0; i < page_info.places.length; i++) {
         if (no == page_info.places[i].siteno) {
             return page_info.places[i].sitename;
         }
@@ -60,7 +60,7 @@ mysql_connection.query('SELECT * from roomclass;', function (error, results, fie
 });
 
 function room_no_to_name(no) {
-    for (var i = 0 ; i < page_info.rooms.length; i++) {
+    for (var i = 0; i < page_info.rooms.length; i++) {
         if (no == page_info.rooms[i].classno) {
             return page_info.rooms[i].classname;
         }
@@ -97,19 +97,20 @@ function modifypage_action() {
 
     console.log(page_info)
 
-    document.getElementById('userno').   innerHTML = page_info.user.userno;
     document.getElementById('userphone').innerHTML = page_info.user.phone;
+
+    document.getElementById('username').setAttribute("value", page_info.user.name);
 
     if (page_info.user.idid != null) {
         document.getElementById('idid').setAttribute("value", page_info.user.idid);
     }
 
-    switch(page_info.user.sex){
-        case '男':;
-        case '女':document.getElementById(page_info.user.sex).setAttribute('checked',"true");break;
+    switch (page_info.user.sex) {
+        case '男': ;
+        case '女': document.getElementById(page_info.user.sex).setAttribute('checked', "true"); break;
     }
 
-    return(document.querySelector("html").outerHTML);
+    return (document.querySelector("html").outerHTML);
 }
 
 
@@ -121,25 +122,24 @@ function mainpage_action() {
     document.getElementById('userphone').innerHTML = page_info.user.phone
 
     var place_ch = "<select multiple=\"multiple\" class=\"select-item\" name=\"position\" style=\"height: " + (page_info.places.length * 50 + 3) + ";\">";
-    for (var i = 0; i < page_info.places.length; i++){
+    for (var i = 0; i < page_info.places.length; i++) {
         place_ch += "<option value=\"" + page_info.places[i].siteno + "\" class=\"btn place-item\">" + page_info.places[i].sitename + "</option>";
     }
     document.getElementById('select-place').innerHTML = place_ch + "</select>";
 
-    var form_ch = "<table><tr><th>编号</th><th>区号</th><th>价钱</th><th>评级</th><th>地点</th><th>预约</th></tr>\n";
+    var form_ch = "<table><tr><th>编号</th><th>区号</th><th>价钱</th><th>地点</th><th>预约</th></tr>\n";
     function add_element(ele) {
         return "<td>" + ele + "</td>"
     }
 
     if (page_info.result != null) {
-        for (var i = 0; i < page_info.result.length; i++){
+        for (var i = 0; i < page_info.result.length; i++) {
             form_ch += "<tr>";
             form_ch += add_element(page_info.result[i].roomno);
             form_ch += add_element(room_no_to_name(page_info.result[i].classno));
             form_ch += add_element(page_info.result[i].price);
-            form_ch += add_element(page_info.result[i].evaluate);
             // form_ch += add_element(page_info.result[i].state);
-            const isDisable = page_info.result[i].state == '空闲' ? '':'disabled';
+            const isDisable = page_info.result[i].state == '空闲' ? '' : 'disabled';
             form_ch += add_element(site_no_to_name(page_info.result[i].siteno));
             form_ch += add_element("<input type=\"checkbox\" name=\"seat\" value=\"" + page_info.result[i].roomno + "\" " + isDisable + ">");
             form_ch += "</tr>\n";
@@ -147,14 +147,14 @@ function mainpage_action() {
     }
     document.getElementById('result').innerHTML = form_ch + '</table>';
 
-    return(document.querySelector("html").outerHTML);
+    return (document.querySelector("html").outerHTML);
 }
 
 app.get('/login', (req, res) => {
     const info = req.query;
     //! 判断用户类型，检验合理性
     console.log('用户登录GET:', info);
-    if (info.uid.length != 10 || Number(info.uid) + "" != info.uid) {
+    if (info.uid.length != 11 || Number(info.uid) + "" != info.uid) {
         res.type('text');
         res.end("手机号格式错误，请返回重试:" + info.uid.length + " " + Number(info.uid));
         return;
@@ -170,7 +170,7 @@ app.get('/login', (req, res) => {
                 res.end("该用户已存在，请返回登录");
                 return;
             } else {
-                page_info.user.name = "新注册用户"; 
+                page_info.user.name = "新注册用户";
                 page_info.user.phone = info.uid;
                 // ! 向数据库中插入用户
                 mysql_connection.query('INSERT INTO `information` VALUES (\'' + info.uid + '\',\'' + info.psd + '\');', function (error, results, fields) {
@@ -200,10 +200,11 @@ app.get('/login', (req, res) => {
                 mysql_connection.query('SELECT * from user where phone=\'' + info.uid + '\';', function (error, results, fields) {
                     if (error) throw error;
                     if (results.length == 1) {
-                        page_info.user.name   = results[0].username;
-                        page_info.user.sex    = results[0].sex;
-                        page_info.user.userno = results[0].userno;
-                        page_info.user.idid   = results[0].identifycard;
+                        page_info.user.name = results[0].username;
+                        page_info.user.sex = results[0].sex;
+                        page_info.user.idid = results[0].identifycard;
+                        page_info.user.has_info = true;
+
                     } else {
                         page_info.user.name = "无名用户"; // !
                     }
@@ -216,16 +217,16 @@ app.get('/login', (req, res) => {
     }
 });
 
-app.get('/select-place', function(req, res) {
+app.get('/select-place', function (req, res) {
     var ans = req.query.position;
 
     var tem = ""
     if (ans instanceof Array) {
-        for (var i = 0; i < ans.length; i++){
+        for (var i = 0; i < ans.length; i++) {
             // console.log(ans[i])
             tem += ('siteno=\'' + ans[i] + '\'')
             if (i != ans.length - 1) {
-                tem +=  " OR ";
+                tem += " OR ";
             } else {
                 tem += "";
             }
@@ -240,7 +241,7 @@ app.get('/select-place', function(req, res) {
     });
 });
 
-app.get('/modify', function(req, res) {
+app.get('/modify', function (req, res) {
     var ans = req.query;
 
     if (ans.sex == undefined) {
@@ -248,21 +249,43 @@ app.get('/modify', function(req, res) {
         return;
     } else {
         // ! 修改用户信息
-        var mysql_cmd = "update user set sex='" + ans.sex + "',identifycard='" + ans.id + "' where phone='" + page_info.user.phone + "';"
-        mysql_connection.query(mysql_cmd, function (error, results, fields) {
-            if (error) throw error;
-            if (ans.psd != '') {
-                mysql_cmd = "update information set password='" + ans.psd + "' where phone='" + page_info.user.phone + "';"
-                mysql_connection.query(mysql_cmd, function (error, results, fields) {
-                    if (error) throw error;
+        page_info.user.sex = ans.sex;
+        page_info.user.idid = ans.id;
+        page_info.user.name = ans.username;
+        if (page_info.user.has_info == true) {
+            var mysql_cmd = "update user set sex='" + ans.sex + "',identifycard='" + ans.id + "',username='" + ans.username + "' where phone='" + page_info.user.phone + "';"
+            mysql_connection.query(mysql_cmd, function (error, results, fields) {
+                if (error) throw error;
+                if (ans.psd != '') {
+                    mysql_cmd = "update information set password='" + ans.psd + "' where phone='" + page_info.user.phone + "';"
+                    mysql_connection.query(mysql_cmd, function (error, results, fields) {
+                        if (error) throw error;
+                        res.end(mainpage_action());
+                        return;
+                    });
+                } else {
                     res.end(mainpage_action());
                     return;
-                });
-            } else {
-                res.end(mainpage_action());
-                return;
-            }
-        });
+                }
+            });
+        } else { // add info to database
+            var mysql_cmd = "INSERT INTO `user` VALUES ('" + page_info.user.phone + "','" + ans.username + "','" + ans.sex + "','" + ans.id + "','80');"
+            mysql_connection.query(mysql_cmd, function (error, results, fields) {
+                if (error) throw error;
+                page_info.user.has_info = true;
+                if (ans.psd != '') {
+                    mysql_cmd = "update information set password='" + ans.psd + "' where phone='" + page_info.user.phone + "';"
+                    mysql_connection.query(mysql_cmd, function (error, results, fields) {
+                        if (error) throw error;
+                        res.end(mainpage_action());
+                        return;
+                    });
+                } else {
+                    res.end(mainpage_action());
+                    return;
+                }
+            });
+        }
     }
 });
 
