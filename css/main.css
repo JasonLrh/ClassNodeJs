@@ -133,6 +133,9 @@ h2 {
 
 .addition-tools {
     float: top;
+    /* padding: 10px, 10px; */
+    /* margin: 10px, 10px; */
+    /* margin: 0 auto; */
 }
 
 .tool-set {
@@ -142,6 +145,12 @@ h2 {
     background-color: #066991;
     font-size: 16px;
     margin: auto;
+}
+
+.toolsbutton {
+    float: top;
+    /* margin: 0 auto; */
+    border: none;
 }
 
 /* ********************************************************* */
@@ -172,10 +181,6 @@ table thead tr{
 table tbody td:nth-child(odd){
     background-color: rgb(207, 166, 166);
 }
-
-/* table tbody tr:nth-child(even){
-    background-color: rgb(250, 250, 226);
-} */
 
 table tbody td:nth-child(even){
     background-color: rgb(209, 209, 144);

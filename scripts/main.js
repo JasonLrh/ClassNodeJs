@@ -11,6 +11,8 @@ const {JSDOM} = jsdom;
 // * start: mysql *************************************************************
 const mysql   = require('mysql');
 const { isCryptoKey } = require('util/types');
+const { table } = require('console');
+const { userInfo } = require('os');
 
 var mysql_connection = mysql.createConnection({
     host     : 'localhost',
@@ -26,7 +28,10 @@ var page_info = {
     rooms:null,
     user:{
         name:null,
-        phone:null
+        userno:null,
+        sex:null,
+        phone:null,
+        idid:null
     },
     filter:{
         place:null,
@@ -84,6 +89,29 @@ const file_root = '../'
 app.use(express.static(file_root))
 app.use(express.json())
 // * end : server config *************************************************************
+
+
+function modifypage_action() {
+    const dom = new JSDOM(fs.readFileSync(file_root + 'ui_utils/modify.html'));
+    const document = dom.window.document;
+
+    console.log(page_info)
+
+    document.getElementById('userno').   innerHTML = page_info.user.userno;
+    document.getElementById('userphone').innerHTML = page_info.user.phone;
+
+    if (page_info.user.idid != null) {
+        document.getElementById('idid').setAttribute("value", page_info.user.idid);
+    }
+
+    switch(page_info.user.sex){
+        case '男':;
+        case '女':document.getElementById(page_info.user.sex).setAttribute('checked',"true");break;
+    }
+
+    return(document.querySelector("html").outerHTML);
+}
+
 
 function mainpage_action() {
     const dom = new JSDOM(fs.readFileSync(file_root + 'ui_utils/main.html'));
@@ -169,10 +197,13 @@ app.get('/login', (req, res) => {
                     res.end("密码不匹配，请返回重试");
                     return;
                 }
-                mysql_connection.query('SELECT username from user where phone=\'' + info.uid + '\';', function (error, results, fields) {
+                mysql_connection.query('SELECT * from user where phone=\'' + info.uid + '\';', function (error, results, fields) {
                     if (error) throw error;
                     if (results.length == 1) {
-                        page_info.user.name = results[0].username; // !
+                        page_info.user.name   = results[0].username;
+                        page_info.user.sex    = results[0].sex;
+                        page_info.user.userno = results[0].userno;
+                        page_info.user.idid   = results[0].identifycard;
                     } else {
                         page_info.user.name = "无名用户"; // !
                     }
@@ -207,6 +238,32 @@ app.get('/select-place', function(req, res) {
         page_info.result = results;
         res.end(mainpage_action());
     });
+});
+
+app.get('/modify', function(req, res) {
+    var ans = req.query;
+
+    if (ans.sex == undefined) {
+        res.end(modifypage_action());
+        return;
+    } else {
+        // ! 修改用户信息
+        var mysql_cmd = "update user set sex='" + ans.sex + "',identifycard='" + ans.id + "' where phone='" + page_info.user.phone + "';"
+        mysql_connection.query(mysql_cmd, function (error, results, fields) {
+            if (error) throw error;
+            if (ans.psd != '') {
+                mysql_cmd = "update information set password='" + ans.psd + "' where phone='" + page_info.user.phone + "';"
+                mysql_connection.query(mysql_cmd, function (error, results, fields) {
+                    if (error) throw error;
+                    res.end(mainpage_action());
+                    return;
+                });
+            } else {
+                res.end(mainpage_action());
+                return;
+            }
+        });
+    }
 });
 
 // app.get('/yuyue', function(req, res) {

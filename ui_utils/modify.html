@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>修改用户信息</title>
+
+  <link href="/css/main.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="/js/main.js"></script>
+</head>
+
+<body>
+  <div class="main-part">
+    <div style="height: 23vh;">
+    </div>
+    <div>
+      <div id="app" style="margin:auto;width: 30%;padding: 20px;background-color: #dcaae0;border-radius: 10%;">
+        <h2 style="font-size: 26px;
+        color: #035036;
+        text-shadow: 0 0 0 #23b383;
+        font-weight: bolder;
+        text-align: center;
+        /* height: 50px; */
+        /* margin-top: 10px; */
+        float: top;">修改用户信息</h2>
+        <br />
+        <form action="modify" name="modify" method="get" onsubmit="return check_form_valid()">
+          <table>
+            <tr>
+              <td>用户ID</td>
+              <td id="userno">xx</td>
+            </tr>
+            <tr>
+              <td>手机号</td>
+              <td id="userphone">xx</td>
+            </tr>
+            <tr>
+              <td>性别</td>
+              <td id="sex">
+                <label for="sex"><input type="radio" name="sex" id="男" value="男">男<input type="radio" name="sex" id="女"
+                    value="女">女</label>
+              </td>
+            </tr>
+            <tr>
+              <td>身份证号</td>
+              <td><input type="text" name="id" id="idid" value=""></td>
+            </tr>
+            <tr>
+              <td>密码(留空不改)</td>
+              <td><input type="password" name="psd"></td>
+            </tr>
+          </table>
+          <br />
+          <input type="submit" name="typ" value="确认修改">
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script type="text/javascript">
+  function check_form_valid() {
+    var radio = document.getElementsByName('sex');
+    var id = document.querySelector("input[name='id']").value;
+    var psd = document.querySelector("input[name='psd']").value;
+    var sex = 'U'
+    for (i = 0; i < radio.length; i++) {
+      if (radio[i].checked) {
+        sex = radio[i].value;
+        break;
+      }
+    }
+    if (sex == 'U') {
+      alert('请输入性别');
+      return false;
+    } else if (id.length != 18) {
+      alert('检查身份证格式');
+      return false;
+    }
+  }
+
+
+</script>
+
+</html>
