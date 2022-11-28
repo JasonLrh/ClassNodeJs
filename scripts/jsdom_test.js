@@ -1,39 +1,10 @@
-var fs        = require('fs');
-const jsdom   = require('jsdom');
-const {JSDOM} = jsdom;
+var da = '2022-11-29'
 
-var mysql     = require('mysql');
+var st = '06:00:00'
 
-var connection = mysql.createConnection({
-    host     : 'localhost',
-    user     : 'root',
-    password : '123456',
-    database : 'db_book'
-});
+var et = '09:00:00'
 
-connection.connect();
-var place;
-connection.query('SELECT * from bookclass', function (error, results, fields) {
-    if (error) throw error;
-    place = results;
-});
 
-// **************************************************************
+var cmd = 'select * from apply where startdate=\'' + da + '\' AND ((\'' + st + '\' between st and et) OR (\'' + et + '\' between st and et) OR ( \'' + st + '\' < st AND \'' + et + '\' > et ));'
 
-setTimeout(function () {
-    const file_root = '../'
-
-    const dom = new JSDOM(fs.readFileSync(file_root + 'index.html'));
-    const document = dom.window.document
-    
-    var place_ch = "";
-    
-    for (var i = 0; i < place.length; i++){
-        place_ch += "<option value=\"" + place[i].classno + "\" class=\"btn place-item\">" + place[i].classname + "</option>\n"
-    }
-    
-    document.getElementById('select-place').innerHTML = place_ch;
-
-    console.log(document.querySelector("html").outerHTML);
-}, 1000)
-
+console.log(cmd)

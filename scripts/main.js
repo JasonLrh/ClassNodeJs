@@ -35,8 +35,13 @@ var page_info = {
     },
     filter: {
         place: null,
-        seat_type: null
+        seat_type: null,
+        time: {
+            start:null,
+            end:null
+        }
     },
+    inflect: null,
     result: null
 };
 
@@ -138,14 +143,44 @@ function mainpage_action() {
             form_ch += add_element(page_info.result[i].roomno);
             form_ch += add_element(room_no_to_name(page_info.result[i].classno));
             form_ch += add_element(page_info.result[i].price);
-            // form_ch += add_element(page_info.result[i].state);
-            const isDisable = page_info.result[i].state == '空闲' ? '' : 'disabled';
+            // TODO: 检查个人订阅信息, 对应勾选checked
+            var isDisable = '';
+            if (page_info.inflect != null && page_info.inflect.length != 0) {
+                for (var j = 0; j < page_info.inflect.length; j++){
+                    if (page_info.inflect[j].roomno == page_info.result[i].roomno){
+                        isDisable = 'disabled';
+                        break;
+                    }
+                }
+            }
+            
             form_ch += add_element(site_no_to_name(page_info.result[i].siteno));
             form_ch += add_element("<input type=\"checkbox\" name=\"seat\" value=\"" + page_info.result[i].roomno + "\" " + isDisable + ">");
             form_ch += "</tr>\n";
         }
     }
     document.getElementById('result').innerHTML = form_ch + '</table>';
+
+    var stime = document.querySelector("input[name='stime']");
+    var def_stime = page_info.filter.time.start;
+    if (def_stime == null) {
+        var d = new Date();
+        var hour = d.getHours()
+        var mini = d.getMinutes()
+        if (hour < 10) {
+        hour = '0' + hour;
+        }
+        if (mini < 10) {
+        mini = '0' + mini;
+        }
+        def_stime = hour + ":" + mini;
+    } 
+    stime.setAttribute("value", def_stime);
+    
+    if (page_info.filter.time.end != null) {
+        var etime = document.querySelector("input[name='etime']");
+        etime.setAttribute("value", page_info.filter.time.end);
+    }
 
     return (document.querySelector("html").outerHTML);
 }
@@ -182,7 +217,6 @@ app.get('/login', (req, res) => {
         });
     } else {
         // 在数据库中检索用户密码是否匹配
-        // ! 修改子句
         mysql_connection.query('select phone, password from information where phone=\'' + info.uid + '\'', function (error, results, fields) {
             if (error) throw error;
             console.log('数据库检索:', results);
@@ -192,7 +226,6 @@ app.get('/login', (req, res) => {
                 return;
             } else {
                 if (results[0].password != info.psd) {
-                    // ! 密码不匹配，请重试
                     res.type('text');
                     res.end("密码不匹配，请返回重试");
                     return;
@@ -204,10 +237,10 @@ app.get('/login', (req, res) => {
                         page_info.user.sex = results[0].sex;
                         page_info.user.idid = results[0].identifycard;
                         page_info.user.has_info = true;
-
                     } else {
-                        page_info.user.name = "无名用户"; // !
+                        page_info.user.name = "无名用户";
                     }
+                    // TODO: 检查个人订阅信息
                     page_info.user.phone = info.uid;
                     res.end(mainpage_action());
                 });
@@ -289,28 +322,48 @@ app.get('/modify', function (req, res) {
     }
 });
 
-// app.get('/yuyue', function(req, res) {
-//     var ans = req.query.readerno;
+app.get('/filter', function(req, res) {
+    var ans = req.query;
 
-//     console.log('yuyue ');
-//     if (ans instanceof Array) {
-//         var tem = "预约者: ['"
-//         for (var i = 0; i < ans.length; i++){
-//             // console.log(ans[i])
-//             tem += (ans[i])
-//             if (i != ans.length - 1) {
-//                 tem +=  "', ";
-//             } else {
-//                 tem += "'],"
-//             }
-//         }
-//         console.log(tem);
-//     } else {
-//         console.log('预约者: \'' + ans + '\',');
-//     }
+    page_info.filter.time.start = ans.stime;
+    page_info.filter.time.end = ans.etime;
 
-//     res.redirect('/');
-// });
+    var da = ans.date;
+    var st = ans.stime + ":00";
+    var et = ans.etime + ":00";
+
+    var cmd = 'select * from apply where startdate=\'' + da + '\' AND ((\'' + st + '\' between st and et) OR (\'' + et + '\' between st and et) OR ( \'' + st + '\' < st AND \'' + et + '\' > et ));'
+    // console.log(cmd);
+    mysql_connection.query(cmd, function (error, results, fields) {
+        if (error) throw error;
+        page_info.inflect = results;
+        res.end(mainpage_action());    
+    });
+});
+
+// INSERT INTO `apply` VALUES ('11244678912', 'B201603004', '2022-11-29', '07:00:00', '10:00:00','50');
+app.get('/yuyue', function(req, res) {
+    var ans = req.query;
+
+    console.log('yuyue ');
+    if (ans instanceof Array) {
+        var tem = "预约者: ['"
+        for (var i = 0; i < ans.length; i++){
+            // console.log(ans[i])
+            tem += (ans[i])
+            if (i != ans.length - 1) {
+                tem +=  "', ";
+            } else {
+                tem += "'],"
+            }
+        }
+        console.log(tem);
+    } else {
+        console.log('预约者: \'' + ans + '\',');
+    }
+
+    res.redirect('/');
+});
 
 var server = app.listen(8888);
 

@@ -10,7 +10,7 @@
   <script type="text/javascript" src="/js/main.js"></script>
 </head>
 
-<body>
+<body onload="init()">
   <ul class="top-navbar">
     <li class="top-navbar-item">AB自习室</li>
     <li class="top-navbar-item"><a id="username" href="/modify">用户</a></li>
@@ -37,7 +37,20 @@
     </div>
 
     <div class="right-pannel">
+      <div class="config-pannel">
+        <h2>预约时间</h2>
+        <form action="filter" name="filter" method="get" onsubmit="return check_form_time()">
+          <input type="date" name="date" value="2022-11-28" min="2020-11-28" max="2020-11-29" required><br>
+          <a style="color: white;">开始：</a>
+          <input type="time" name="stime" value="19:18" min="21:00" max="23:59" required>
+          <a style="color: white;">结束：</a>
+          <input type="time" name="etime" value="" min="21:00" max="23:59" required><br/>
+
+          <input type="submit" value="提交">
+        </form>
+      </div>
       <div class="result-show">
+        <h2>结果筛选</h2>
         <form id="result" action="yuyue" onchange="submit()">
           <table>
             <tr>
@@ -56,5 +69,64 @@
     </div>
   </div>
 </body>
+
+<script type="text/javascript">
+  function DateToHtmlDate(d){
+    var year = d.getFullYear();
+    var month = d.getMonth() + 1;
+    var day = d.getDate();
+    if (day < 10) {
+      day = '0' + day;
+    }
+    return year + '-' + month + '-' + day;
+  }
+
+  function TimeToHtmlTime(d) {
+    var hour = d.getHours()
+    var mini = d.getMinutes()
+    if (hour < 10) {
+      hour = '0' + hour;
+    }
+    if (mini < 10) {
+      mini = '0' + mini;
+    }
+    return hour + ":" + mini
+  }
+
+  function valid_time() {
+    var date_input = document.querySelector("input[name='date']");
+    var stime_input = document.querySelector("input[name='stime']");
+    var etime_input = document.querySelector("input[name='etime']");
+
+    var date = new Date()
+    var date_val = DateToHtmlDate(date)
+    date_input.setAttribute("value", date_val)
+    date_input.setAttribute("min", date_val)
+
+    var t_val = TimeToHtmlTime(date)
+    stime_input.setAttribute("min", t_val);
+    etime_input.setAttribute("min", t_val);
+    
+    var hdate = new Date(Date.parse(date) + 7 * 86400000)
+    date_val = DateToHtmlDate(hdate)
+    date_input.setAttribute("max", date_val)
+  }
+
+  function init() {
+    valid_time()
+    setInterval(valid_time, 1000)
+  }
+
+  function check_form_time() {
+    var stime = document.querySelector("input[name='stime']").value;
+    var etime = document.querySelector("input[name='etime']").value;
+    if (etime <= stime) {
+      alert('结束时间咋还早于开始时间？再来');
+      return false;
+    }
+  }
+
+
+</script>
 
 </html>
