@@ -216,7 +216,7 @@ app.get('/login', (req, res) => {
                 // ! 向数据库中插入用户
                 mysql_connection.query('INSERT INTO `information` VALUES (\'' + info.uid + '\',\'' + info.psd + '\');', function (error, results, fields) {
                     if (error) throw error;
-                    res.end(mainpage_action());
+                    res.redirect('/default_page');
                 });
                 return;
             }
@@ -248,7 +248,7 @@ app.get('/login', (req, res) => {
                     }
                     // TODO: 检查个人订阅信息
                     page_info.user.phone = info.uid;
-                    res.end(mainpage_action());
+                    res.redirect('/default_page');
                 });
                 return;
             }
@@ -276,7 +276,7 @@ app.get('/select-place', function (req, res) {
     mysql_connection.query('SELECT * from room where ' + tem + ';', function (error, results, fields) {
         if (error) throw error;
         page_info.result = results;
-        res.end(mainpage_action());
+        res.redirect('/default_page');
     });
 });
 
@@ -299,11 +299,11 @@ app.get('/modify', function (req, res) {
                     mysql_cmd = "update information set password='" + ans.psd + "' where phone='" + page_info.user.phone + "';"
                     mysql_connection.query(mysql_cmd, function (error, results, fields) {
                         if (error) throw error;
-                        res.end(mainpage_action());
+                        res.redirect('/default_page');
                         return;
                     });
                 } else {
-                    res.end(mainpage_action());
+                    res.redirect('/default_page');
                     return;
                 }
             });
@@ -316,11 +316,11 @@ app.get('/modify', function (req, res) {
                     mysql_cmd = "update information set password='" + ans.psd + "' where phone='" + page_info.user.phone + "';"
                     mysql_connection.query(mysql_cmd, function (error, results, fields) {
                         if (error) throw error;
-                        res.end(mainpage_action());
+                        res.redirect('/default_page');
                         return;
                     });
                 } else {
-                    res.end(mainpage_action());
+                    res.redirect('/default_page');
                     return;
                 }
             });
@@ -344,9 +344,14 @@ app.get('/filter', function (req, res) {
     mysql_connection.query(cmd, function (error, results, fields) {
         if (error) throw error;
         page_info.inflect = results;
-        res.end(mainpage_action());
+        res.redirect('/default_page');
     });
 });
+
+app.get('/default_page', function(req, res) {
+    res.end(mainpage_action());
+})
+
 
 // INSERT INTO `apply` VALUES ('11244678912', 'B201603004', '2022-11-29', '07:00:00', '10:00:00','50');
 
@@ -385,8 +390,8 @@ app.get('/yuyue', function (req, res) {
             mysql_connection.query(cmd, function (error, results, fields) {
                 if (error) throw error;
                 page_info.inflect = results;
-                console.log(page_info.inflect)
-                res.end(mainpage_action());
+                console.log(page_info.inflect);
+                res.redirect('/default_page');
             });
         });
     }
