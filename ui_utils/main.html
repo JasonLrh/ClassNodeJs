@@ -74,6 +74,9 @@
   function DateToHtmlDate(d){
     var year = d.getFullYear();
     var month = d.getMonth() + 1;
+    if (month < 10) {
+      month = '0' + day;
+    }
     var day = d.getDate();
     if (day < 10) {
       day = '0' + day;
@@ -100,7 +103,7 @@
 
     var date = new Date()
     var date_val = DateToHtmlDate(date)
-    date_input.setAttribute("value", date_val)
+    // date_input.setAttribute("value", date_val)
     date_input.setAttribute("min", date_val)
 
     var t_val = TimeToHtmlTime(date)

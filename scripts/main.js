@@ -13,6 +13,7 @@ const mysql = require('mysql');
 const { isCryptoKey } = require('util/types');
 const { table } = require('console');
 const { userInfo } = require('os');
+const e = require('express');
 
 var mysql_connection = mysql.createConnection({
     host: 'localhost',
@@ -186,6 +187,24 @@ function mainpage_action() {
     if (page_info.filter.time.end != null) {
         var etime = document.querySelector("input[name='etime']");
         etime.setAttribute("value", page_info.filter.time.end);
+    }
+
+    var ddd = document.querySelector("input[name='date']");
+    if (page_info.filter.time.date != null) {
+        ddd.setAttribute("value", page_info.filter.time.date);
+    } else {
+        var d = new Date();
+        var year = d.getFullYear();
+        var month = d.getMonth() + 1;
+        if (month < 10) {
+            month = '0' + day;
+        }
+        var day = d.getDate();
+        if (day < 10) {
+            day = '0' + day;
+        }
+        var def_stime = year + '-' + month + '-' + day;
+        ddd.setAttribute("value", def_stime);
     }
 
     return (document.querySelector("html").outerHTML);
