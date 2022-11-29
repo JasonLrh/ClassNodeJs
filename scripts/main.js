@@ -380,7 +380,12 @@ app.get('/yuyue', function (req, res) {
         console.warn('array!');
     } else {
         mysql_connection.query(add_apply_cmd(ans), function (error, results, fields) {
-            if (error) throw error;
+            if (error) {
+                console.warn('insert data error:');
+                console.log(error);
+                res.redirect('/default_page');
+                return;
+            };
 
             var da = page_info.filter.time.date;
             var st = page_info.filter.time.start + ":00";
