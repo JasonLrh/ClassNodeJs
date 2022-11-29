@@ -37,8 +37,9 @@ var page_info = {
         place: null,
         seat_type: null,
         time: {
-            start:null,
-            end:null
+            date: null,
+            start: null,
+            end: null
         }
     },
     inflect: null,
@@ -100,8 +101,6 @@ function modifypage_action() {
     const dom = new JSDOM(fs.readFileSync(file_root + 'ui_utils/modify.html'));
     const document = dom.window.document;
 
-    console.log(page_info)
-
     document.getElementById('userphone').innerHTML = page_info.user.phone;
 
     document.getElementById('username').setAttribute("value", page_info.user.name);
@@ -132,12 +131,13 @@ function mainpage_action() {
     }
     document.getElementById('select-place').innerHTML = place_ch + "</select>";
 
-    var form_ch = "<table><tr><th>编号</th><th>区号</th><th>价钱</th><th>地点</th><th>预约</th></tr>\n";
+    var form_ch = '';
     function add_element(ele) {
         return "<td>" + ele + "</td>"
     }
 
-    if (page_info.result != null) {
+    if (page_info.result != null && page_info.filter.time.end != null) {
+        form_ch += "<table><tr><th>座位号</th><th>分区</th><th>小时费用</th><th>地点</th><th>预约</th></tr>"
         for (var i = 0; i < page_info.result.length; i++) {
             form_ch += "<tr>";
             form_ch += add_element(page_info.result[i].roomno);
@@ -145,19 +145,25 @@ function mainpage_action() {
             form_ch += add_element(page_info.result[i].price);
             // TODO: 检查个人订阅信息, 对应勾选checked
             var isDisable = '';
+            var isChecked = '';
             if (page_info.inflect != null && page_info.inflect.length != 0) {
-                for (var j = 0; j < page_info.inflect.length; j++){
-                    if (page_info.inflect[j].roomno == page_info.result[i].roomno){
+                for (var j = 0; j < page_info.inflect.length; j++) {
+                    if (page_info.inflect[j].roomno == page_info.result[i].roomno) {
                         isDisable = 'disabled';
+                        if (page_info.inflect[j].phone == page_info.user.phone) {
+                            isChecked = 'checked=true';
+                        }
                         break;
                     }
                 }
             }
-            
             form_ch += add_element(site_no_to_name(page_info.result[i].siteno));
-            form_ch += add_element("<input type=\"checkbox\" name=\"seat\" value=\"" + page_info.result[i].roomno + "\" " + isDisable + ">");
-            form_ch += "</tr>\n";
+            form_ch += add_element("<input type=\"checkbox\" name=\"seat\" value=\"" + page_info.result[i].roomno + "\" " + isDisable + " " + isChecked + ">");
+            form_ch += "</tr>";
         }
+        form_ch += '</table>';
+    } else {
+        form_ch += "<p>没有数据（请先选择时间）</p>"
     }
     document.getElementById('result').innerHTML = form_ch + '</table>';
 
@@ -168,15 +174,15 @@ function mainpage_action() {
         var hour = d.getHours()
         var mini = d.getMinutes()
         if (hour < 10) {
-        hour = '0' + hour;
+            hour = '0' + hour;
         }
         if (mini < 10) {
-        mini = '0' + mini;
+            mini = '0' + mini;
         }
         def_stime = hour + ":" + mini;
-    } 
+    }
     stime.setAttribute("value", def_stime);
-    
+
     if (page_info.filter.time.end != null) {
         var etime = document.querySelector("input[name='etime']");
         etime.setAttribute("value", page_info.filter.time.end);
@@ -322,9 +328,10 @@ app.get('/modify', function (req, res) {
     }
 });
 
-app.get('/filter', function(req, res) {
+app.get('/filter', function (req, res) {
     var ans = req.query;
 
+    page_info.filter.time.date = ans.date;
     page_info.filter.time.start = ans.stime;
     page_info.filter.time.end = ans.etime;
 
@@ -337,32 +344,57 @@ app.get('/filter', function(req, res) {
     mysql_connection.query(cmd, function (error, results, fields) {
         if (error) throw error;
         page_info.inflect = results;
-        res.end(mainpage_action());    
+        res.end(mainpage_action());
     });
 });
 
 // INSERT INTO `apply` VALUES ('11244678912', 'B201603004', '2022-11-29', '07:00:00', '10:00:00','50');
-app.get('/yuyue', function(req, res) {
-    var ans = req.query;
 
-    console.log('yuyue ');
+function add_apply_cmd(roomno) {
+    var st = page_info.filter.time.start + ":00";
+    var et = page_info.filter.time.end   + ":00";
+    var dbg = "INSERT INTO `apply` VALUES ('" + page_info.user.phone + "', '" + roomno + "', '" + page_info.filter.time.date + "', '" + st + "', '" + et + "','50');"
+    // console.log(dbg)
+    return dbg
+}
+
+app.get('/yuyue', function (req, res) {
+    var ans = req.query.seat;
+
     if (ans instanceof Array) {
         var tem = "预约者: ['"
-        for (var i = 0; i < ans.length; i++){
+        for (var i = 0; i < ans.length; i++) {
             // console.log(ans[i])
             tem += (ans[i])
             if (i != ans.length - 1) {
-                tem +=  "', ";
+                tem += "', ";
             } else {
                 tem += "'],"
             }
         }
-        console.log(tem);
+        console.warn('array!');
     } else {
-        console.log('预约者: \'' + ans + '\',');
+        mysql_connection.query(add_apply_cmd(ans), function (error, results, fields) {
+            if (error) throw error;
+
+            var da = page_info.filter.time.date;
+            var st = page_info.filter.time.start + ":00";
+            var et = page_info.filter.time.end   + ":00";
+            var cmd = 'select * from apply where startdate=\'' + da + '\' AND ((\'' + st + '\' between st and et) OR (\'' + et + '\' between st and et) OR ( \'' + st + '\' < st AND \'' + et + '\' > et ));'
+            // console.log(cmd);
+            mysql_connection.query(cmd, function (error, results, fields) {
+                if (error) throw error;
+                page_info.inflect = results;
+                console.log(page_info.inflect)
+                res.end(mainpage_action());
+            });
+        });
     }
 
-    res.redirect('/');
+
+
+
+    // res.end(mainpage_action())
 });
 
 var server = app.listen(8888);
