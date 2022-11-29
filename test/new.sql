@@ -68,8 +68,8 @@ CREATE TABLE `apply` (
   `phone` char(20) NOT NULL,
   `roomno` varchar(10) NOT NULL,
   `startdate` date NOT NULL,
-  `starttime` TIME NOT NULL,
-  `endtime` TIME NOT NULL,
+  `st` TIME NOT NULL,
+  `et` TIME NOT NULL,
   `cost` char(10) DEFAULT NULL,
   PRIMARY KEY (`phone`,`roomno`,`startdate`),
   KEY `applyFK2` (`phone`),
@@ -114,8 +114,8 @@ INSERT INTO `apply` VALUES ('11244678912', 'A08', '2022-12-04', '09:00:00', '10:
 INSERT INTO `apply` VALUES ('11244678912', 'A09', '2022-12-04', '14:00:00', '15:00:00','8');
 INSERT INTO `apply` VALUES ('11244678912', 'A10', '2022-12-05', '09:00:00', '10:00:00','5');
 INSERT INTO `apply` VALUES ('11244678912', 'A11', '2022-12-06', '07:00:00', '09:00:00','20');
-INSERT INTO `apply` VALUES ('11244678912', 'A11', '2022-12-06', '15:00:00', '16:00:00','10');
-INSERT INTO `apply` VALUES ('11244678912', 'A11', '2022-12-06', '19:00:00', '20:00:00','10');
+-- INSERT INTO `apply` VALUES ('11244678912', 'A11', '2022-12-06', '15:00:00', '16:00:00','10');
+-- INSERT INTO `apply` VALUES ('11244678912', 'A11', '2022-12-06', '19:00:00', '20:00:00','10');
 INSERT INTO `apply` VALUES ('11244678912', 'A11', '2022-12-07', '10:00:00', '11:00:00','10');
 INSERT INTO `apply` VALUES ('11244678912', 'A12', '2022-12-07', '14:00:00', '15:00:00','30');
 INSERT INTO `apply` VALUES ('11244678912', 'A13', '2022-12-07', '18:00:00', '21:00:00','15');
