@@ -24,7 +24,7 @@ input{
     margin: 0 auto;
     border-radius: 10px;
     /* margin: auto; */
-    border: 0px solid #ccc;
+    border: 3px solid rgb(124, 224, 124);
 }
 
 input:focus{
@@ -159,6 +159,13 @@ h2 {
     float: top;
     /* margin: 0 auto; */
     border: none;
+}
+
+.tag_text {
+    color: rgb(49, 66, 216);
+    background-color: rgb(152, 231, 128);
+    border-radius: 20%;
+    padding: 10px 10px;
 }
 
 /* ********************************************************* */

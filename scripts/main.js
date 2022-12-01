@@ -400,9 +400,11 @@ app.get('/filter', function (req, res) {
         st = ans.stime + ":00";
         et = ans.etime + ":00";
     } else {
-        da = page_info.filter.time.date;
-        st = page_info.filter.time.start + ":00";
-        et = page_info.filter.time.end   + ":00";
+        // da = page_info.filter.time.date;
+        // st = page_info.filter.time.start + ":00";
+        // et = page_info.filter.time.end   + ":00";
+        res.redirect('/default_page');
+        return;
     }
 
     var cmd = 'select * from apply where startdate=\'' + da + '\' AND ((\'' + st + '\' between st and et) OR (\'' + et + '\' between st and et) OR ( \'' + st + '\' < st AND \'' + et + '\' > et ));'
