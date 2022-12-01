@@ -1,10 +1,16 @@
-var da = '2022-11-29'
+const mysql = require('mysql');
+var mysql_connection = mysql.createConnection({
+    host: 'localhost',
+    user: 'root',
+    password: '123456',
+    database: 'self_studyroom',
+    timezone: "STSTEM"
+});
 
-var st = '06:00:00'
 
-var et = '09:00:00'
-
-
-var cmd = 'select * from apply where startdate=\'' + da + '\' AND ((\'' + st + '\' between st and et) OR (\'' + et + '\' between st and et) OR ( \'' + st + '\' < st AND \'' + et + '\' > et ));'
-
-console.log(cmd)
+cmd = "select * from apply where phone=\'18507202657\';"
+mysql_connection.query(cmd, function (error, results, fields) {
+    if (error) throw error;
+    var date = results[0].startdate + ""
+    console.log(date)
+});

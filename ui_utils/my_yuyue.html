@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>尚学自习室</title>
+
+  <link href="/css/main.css" rel="stylesheet" type="text/css">
+  <script type="text/javascript" src="/js/main.js"></script>
+</head>
+
+<body onload="init()">
+  <ul class="top-navbar">
+    <li class="top-navbar-item"><a href="/filter">尚学 自习室</a></li>
+    <li class="top-navbar-item"><a id="username" href="/modify">用户</a></li>
+    <li class="top-navbar-item"><a id="userphone" href="/my_yuyue">手机号</a></li>
+    <li class="top-navbar-item"><a href="/">退出</a></li>
+  </ul>
+
+  <div class="mainp-art">
+
+    <div class="right-pannel">
+      <div class="result-show">
+        <h2>我的预约</h2>
+        <form id="result" action="my_yuyue" onchange="submit()">
+          <table>
+            <tr>
+              <th>房间号</th>
+              <th>日期</th>
+              <th>开始时间</th>
+              <th>结束时间</th>
+              <th>费用</th>
+              <th>取消预约</th>
+            </tr>
+            <tr>
+              <td>A02</td>
+              <td>fake</td>
+              <td>11:11</td>
+              <td>11:15</td>
+              <td>50</td>
+              <td><input type="checkbox" name="del" value="A02:2021-11-18"></td>
+            </tr>
+          </table>
+        </form>
+      </div>
+    </div>
+  </div>
+</body>
+
+<script type="text/javascript">
+  function init() {
+    // valid_time()
+    // setInterval(valid_time, 1000)
+  }
+
+  function check_form_time() {
+    var stime = document.querySelector("input[name='stime']").value;
+    var etime = document.querySelector("input[name='etime']").value;
+    if (etime <= stime) {
+      alert('结束时间咋还早于开始时间？再来');
+      return false;
+    }
+  }
+
+
+</script>
+
+</html>

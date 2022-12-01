@@ -19,7 +19,8 @@ var mysql_connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
     password: '123456',
-    database: 'self_studyroom'
+    database: 'self_studyroom',
+    timezone: "STSTEM"
 });
 
 mysql_connection.connect();
@@ -44,7 +45,8 @@ var page_info = {
         }
     },
     inflect: null,
-    result: null
+    result: null,
+    yuyued: null
 };
 
 mysql_connection.query('SELECT * from roomsite;', function (error, results, fields) {
@@ -118,6 +120,43 @@ function modifypage_action() {
     return (document.querySelector("html").outerHTML);
 }
 
+function add_element(ele) {
+    return "<td>" + ele + "</td>"
+}
+
+function yuyuedpage_action() {
+    const dom = new JSDOM(fs.readFileSync(file_root + 'ui_utils/my_yuyue.html'));
+    const document = dom.window.document;
+
+    document.getElementById('username').innerHTML = page_info.user.name
+    document.getElementById('userphone').innerHTML = page_info.user.phone
+
+    var form_ch = "<table><tr><th>房间号</th><th>日期</th><th>开始时间</th><th>结束时间</th><th>费用</th><th>取消预约</th></tr>";
+    for (var i = 0; i < page_info.yuyued.length; i++) {
+        form_ch += "<tr>";
+
+        var roomn  = page_info.yuyued[i].roomno;
+        var stdate = page_info.yuyued[i].startdate;
+
+        form_ch += add_element(roomn);
+        form_ch += add_element(stdate);
+        form_ch += add_element(page_info.yuyued[i].st);
+        form_ch += add_element(page_info.yuyued[i].et);
+        form_ch += add_element(page_info.yuyued[i].cost);
+        //A02:2021-11-18
+        var val = roomn + ":" + stdate;
+        form_ch += add_element("<input type=\"checkbox\" name=\"del\" value=\"" + val + "\">");
+
+        form_ch += "</tr>";
+
+    }
+
+    document.getElementById('result').innerHTML = form_ch + '</table>';
+
+    return (document.querySelector("html").outerHTML);
+}
+
+
 
 function mainpage_action() {
     const dom = new JSDOM(fs.readFileSync(file_root + 'ui_utils/main.html'));
@@ -133,9 +172,6 @@ function mainpage_action() {
     document.getElementById('select-place').innerHTML = place_ch + "</select>";
 
     var form_ch = '';
-    function add_element(ele) {
-        return "<td>" + ele + "</td>"
-    }
 
     if (page_info.result != null && page_info.filter.time.end != null) {
         form_ch += "<table><tr><th>座位号</th><th>分区</th><th>小时费用</th><th>地点</th><th>预约</th></tr>"
@@ -350,13 +386,21 @@ app.get('/modify', function (req, res) {
 app.get('/filter', function (req, res) {
     var ans = req.query;
 
-    page_info.filter.time.date = ans.date;
-    page_info.filter.time.start = ans.stime;
-    page_info.filter.time.end = ans.etime;
+    var da, st, et;
 
-    var da = ans.date;
-    var st = ans.stime + ":00";
-    var et = ans.etime + ":00";
+    if (ans.date != undefined) {
+        page_info.filter.time.date = ans.date;
+        page_info.filter.time.start = ans.stime;
+        page_info.filter.time.end = ans.etime;
+
+        da = ans.date;
+        st = ans.stime + ":00";
+        et = ans.etime + ":00";
+    } else {
+        da = page_info.filter.time.date;
+        st = page_info.filter.time.start + ":00";
+        et = page_info.filter.time.end   + ":00";
+    }
 
     var cmd = 'select * from apply where startdate=\'' + da + '\' AND ((\'' + st + '\' between st and et) OR (\'' + et + '\' between st and et) OR ( \'' + st + '\' < st AND \'' + et + '\' > et ));'
     // console.log(cmd);
@@ -419,11 +463,30 @@ app.get('/yuyue', function (req, res) {
             });
         });
     }
+});
 
+app.get('/my_yuyue', function (req, res) {
+    var ans = req.query;
 
-
-
-    // res.end(mainpage_action())
+    if (ans.del == undefined) {
+        // default page 
+        cmd = "select * from apply where phone=\'" + page_info.user.phone + "\';"
+        mysql_connection.query(cmd, function (error, results, fields) {
+            if (error) throw error;
+            page_info.yuyued = results;
+            console.log(page_info.yuyued)
+            res.end(yuyuedpage_action());
+        });
+    } else {
+        // delete data from base
+        var q = ans.del.split(":");
+        cmd = "delete from apply where phone=\'" + page_info.user.phone + "\' AND roomno=\'" + q[0] + "\' and startdate=\'" + q[1] + "\';"
+        mysql_connection.query(cmd, function (error, results, fields) {
+            if (error) throw error;
+            // page_info.yuyued = results;
+            res.redirect('/my_yuyue');
+        });   
+    }
 });
 
 var server = app.listen(8888);

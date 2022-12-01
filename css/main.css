@@ -10,7 +10,12 @@
 html, body{
     width: 100%;
     height: 100%;
-    background-image: linear-gradient(to bottom right,#101396a8, #08b2b8);
+    /* background-image: linear-gradient(to bottom right,#101396a8, #08b2b8); */
+    background-image: url('/imgs/bg-1.jpeg');
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-size: cover;
 }
 
 input{
@@ -179,7 +184,7 @@ table thead tr{
 }
 
 table tbody td:nth-child(odd){
-    background-color: rgb(207, 166, 166);
+    background-color: rgb(204, 180, 115);
 }
 
 table tbody td:nth-child(even){
