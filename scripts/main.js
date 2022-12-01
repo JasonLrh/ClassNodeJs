@@ -260,7 +260,6 @@ app.get('/login', (req, res) => {
         // ! 修改子句
         mysql_connection.query('select phone, password from information where phone=\'' + info.uid + '\'', function (error, results, fields) {
             if (error) throw error;
-            console.log('数据库检索:', results);
             if (results.length != 0) {
                 res.type('text');
                 res.end("该用户已存在，请返回登录");
@@ -280,7 +279,6 @@ app.get('/login', (req, res) => {
         // 在数据库中检索用户密码是否匹配
         mysql_connection.query('select phone, password from information where phone=\'' + info.uid + '\'', function (error, results, fields) {
             if (error) throw error;
-            console.log('数据库检索:', results);
             if (results.length != 1) {
                 res.type('text');
                 res.end(results.length == 0 ? "没有此用户啊，请返回重试" : "数据库设计有bug! 请联系管理员");
@@ -314,10 +312,11 @@ app.get('/login', (req, res) => {
 app.get('/select-place', function (req, res) {
     var ans = req.query.position;
 
+    console.log('筛选地点:', ans);
+
     var tem = ""
     if (ans instanceof Array) {
         for (var i = 0; i < ans.length; i++) {
-            // console.log(ans[i])
             tem += ('siteno=\'' + ans[i] + '\'')
             if (i != ans.length - 1) {
                 tem += " OR ";
@@ -337,6 +336,8 @@ app.get('/select-place', function (req, res) {
 
 app.get('/modify', function (req, res) {
     var ans = req.query;
+
+    console.log('修改用户信息:', ans);
 
     if (ans.sex == undefined) {
         res.end(modifypage_action());
@@ -386,6 +387,8 @@ app.get('/modify', function (req, res) {
 app.get('/filter', function (req, res) {
     var ans = req.query;
 
+    console.log('选择时间:', ans);
+
     var da, st, et;
 
     if (ans.date != undefined) {
@@ -403,7 +406,6 @@ app.get('/filter', function (req, res) {
     }
 
     var cmd = 'select * from apply where startdate=\'' + da + '\' AND ((\'' + st + '\' between st and et) OR (\'' + et + '\' between st and et) OR ( \'' + st + '\' < st AND \'' + et + '\' > et ));'
-    // console.log(cmd);
     mysql_connection.query(cmd, function (error, results, fields) {
         if (error) throw error;
         page_info.inflect = results;
@@ -422,17 +424,17 @@ function add_apply_cmd(roomno) {
     var st = page_info.filter.time.start + ":00";
     var et = page_info.filter.time.end   + ":00";
     var dbg = "INSERT INTO `apply` VALUES ('" + page_info.user.phone + "', '" + roomno + "', '" + page_info.filter.time.date + "', '" + st + "', '" + et + "','50');"
-    // console.log(dbg)
     return dbg
 }
 
 app.get('/yuyue', function (req, res) {
     var ans = req.query.seat;
 
+    console.log('预约申请:', ans);
+
     if (ans instanceof Array) {
         var tem = "预约者: ['"
         for (var i = 0; i < ans.length; i++) {
-            // console.log(ans[i])
             tem += (ans[i])
             if (i != ans.length - 1) {
                 tem += "', ";
@@ -440,7 +442,7 @@ app.get('/yuyue', function (req, res) {
                 tem += "'],"
             }
         }
-        console.warn('array!');
+        console.warn('array!', tem);
     } else {
         mysql_connection.query(add_apply_cmd(ans), function (error, results, fields) {
             if (error) {
@@ -454,11 +456,9 @@ app.get('/yuyue', function (req, res) {
             var st = page_info.filter.time.start + ":00";
             var et = page_info.filter.time.end   + ":00";
             var cmd = 'select * from apply where startdate=\'' + da + '\' AND ((\'' + st + '\' between st and et) OR (\'' + et + '\' between st and et) OR ( \'' + st + '\' < st AND \'' + et + '\' > et ));'
-            // console.log(cmd);
             mysql_connection.query(cmd, function (error, results, fields) {
                 if (error) throw error;
                 page_info.inflect = results;
-                console.log(page_info.inflect);
                 res.redirect('/default_page');
             });
         });
@@ -468,13 +468,14 @@ app.get('/yuyue', function (req, res) {
 app.get('/my_yuyue', function (req, res) {
     var ans = req.query;
 
+    console.log('查看预约:', ans);
+
     if (ans.del == undefined) {
         // default page 
         cmd = "select * from apply where phone=\'" + page_info.user.phone + "\';"
         mysql_connection.query(cmd, function (error, results, fields) {
             if (error) throw error;
             page_info.yuyued = results;
-            console.log(page_info.yuyued)
             res.end(yuyuedpage_action());
         });
     } else {
